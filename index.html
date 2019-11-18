@@ -1,0 +1,164 @@
+<html>
+<head> 
+    <title>Doodle</title>
+    <style>
+    #sketch{
+        border: black 1px dashed;
+        position:absolute;
+    }
+    
+    #ui{
+        //border: black 1px solid;
+        position: relative;
+    }
+    #pad{
+        position:relative;
+        }
+    </style>
+</head>
+<body>
+<h1>Sketch</h1>
+<div id="pad">
+    <canvas id="sketch" height="350" width="250"></canvas>
+    <canvas id="ui" height="350" width="250"></canvas>
+</div>
+<br></br>
+<label id="penSize" name="pen size"></label>
+<br></br>
+<button id="clear">Clear</button>
+<button id="penBigger">Pen +</button>
+<button id="penSmaller">Pen -</button>
+<button id="penType">Eraser</button>
+<br></br>
+<button id="keep">Keep</button>
+<br></br>
+<script type="text/javascript">
+
+uicv = document.getElementById("ui");
+uictx = uicv.getContext("2d");
+cv = document.getElementById("sketch")   
+ctx = cv.getContext("2d");
+updateUI();
+ctx.font = "10px Arial";
+mdown = false;
+last_x = 0;
+last_y = 0;
+r = 1
+ctx.lineJoin = "bevel";
+ctx.lineCap = 'round';
+uictx.lineCap = 'round';
+function clear(){
+    let prev = ctx.fillStyle;
+    ctx.fillStyle = "white";
+    ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = prev;
+}clear();
+
+uicv.onmousedown = e=>{
+    
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX,e.offsetY);
+    mdown=true;
+};
+uicv.onmousemove =  e=>{
+    uictx.clearRect(0,0,uicv.width,uicv.height);
+    uictx.beginPath();
+    uictx.arc(e.offsetX,e.offsetY,ctx.lineWidth/2,0,Math.PI*2);
+    
+    if (ctx.strokeStyle.toLowerCase() == "#ffffff"){
+        uictx.fillStyle = "#ffffff";
+        uictx.fill();
+        uictx.stroke();
+    } else {
+        uictx.fillStyle= ctx.strokeStyle;
+        uictx.fill();
+    }
+    if(mdown){
+        /*
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX,e.offsetY);
+        ctx.arc(e.offsetX,e.offsetY,10,0,Math.PI*2);
+        ctx.fill();
+        */
+        ctx.lineTo(e.offsetX,e.offsetY);
+        ctx.stroke();
+        
+       
+
+        ctx.moveTo(e.offsetX,e.offsetY);
+    }
+};
+uicv.onmouseout = uicv.onmouseup = e=>{
+    if(mdown){
+        mdown = false;
+        ctx.lineTo(e.offsetX,e.offsetY);
+        ctx.stroke();
+    }
+};
+
+onkeypress =  e=>{
+    if(e.key ==' ') clear();
+    if(e.key =='+') ctx.lineWidth+=1;
+    if(e.key =='-') ctx.lineWidth-=1;
+};
+function updateUI(){
+    let lb = document.getElementById("penSize");
+    lb.textContent = `Pen Size: ${ctx.lineWidth}`;
+}
+document.getElementById("clear").onclick = e =>{
+    clear();
+};
+
+document.getElementById("penBigger").onclick = e =>{
+    ctx.lineWidth+=1;
+    //uictx.lineWidth+=1;
+    updateUI();
+};
+document.getElementById("penSmaller").onclick = e =>{
+    ctx.lineWidth-=1;
+    //uictx.lineWidth-=1;
+    updateUI();
+};
+document.getElementById("keep").onclick = e=>{
+    let img = document.createElement("img");
+    img.style.border= "black 1px solid";
+    img.style.margin = 1;
+    img.src =cv.toDataURL('png');
+    document.body.appendChild(img);
+};
+document.getElementById("penType").onclick = e =>{
+    
+    if (ctx.strokeStyle.toLowerCase() == "#ffffff"){
+        document.getElementById("penType").textContent = "Eraser";
+        ctx.strokeStyle = 'black';
+    } else {
+        document.getElementById("penType").textContent = "Pen";
+        ctx.strokeStyle = 'white';
+    }
+    //uictx.lineWidth-=1;
+    updateUI();
+};
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
