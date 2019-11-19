@@ -23,30 +23,44 @@
     <canvas id="ui" height="350" width="250"></canvas>
 </div>
 <br></br>
-<label id="penSize" name="pen size"></label>
+
+<button id="keep">Keep</button>
+
 <br></br>
 <button id="clear">Clear</button>
 <button id="penBigger">Pen +</button>
 <button id="penSmaller">Pen -</button>
-<button id="penType">Eraser</button>
+<label id="penSize" name="pen size"></label>
 <br></br>
-<button id="keep">Keep</button>
+<div id="toolType">
+<input type="radio" name="tool" value="Pen" checked>Pen</input>
+<input type="radio" name="tool" value="Eraser">Eraser</input>
+<input type="radio" name="tool" value="Text">Text</input>
+</div>
+<input type="text" id="textBox" hidden="true"></input>
 <br></br>
 <script type="text/javascript">
+tool = document.getElementsByName("tool");
+
+function getTool() {
+    for(let x in tool){
+        if(tool[x].checked) return tool[x].value;
+    }
+    return null;
+}
+
 
 uicv = document.getElementById("ui");
 uictx = uicv.getContext("2d");
 cv = document.getElementById("sketch")   
 ctx = cv.getContext("2d");
 updateUI();
-ctx.font = "10px Arial";
+uictx.font = ctx.font = "20px Arial";
 mdown = false;
-last_x = 0;
-last_y = 0;
-r = 1
 ctx.lineJoin = "bevel";
 ctx.lineCap = 'round';
 uictx.lineCap = 'round';
+
 function clear(){
     let prev = ctx.fillStyle;
     ctx.fillStyle = "white";
@@ -58,34 +72,49 @@ uicv.onmousedown = e=>{
     
     ctx.beginPath();
     ctx.moveTo(e.offsetX,e.offsetY);
+    let t = getTool();
+     if (t=="Text"){
+        let text = document.getElementById("textBox").value;
+        ctx.fillText(text,e.offsetX,e.offsetY);
+    }
+    if (t!= "Pen" && t != "Eraser") return;
     mdown=true;
 };
 uicv.onmousemove =  e=>{
     uictx.clearRect(0,0,uicv.width,uicv.height);
-    uictx.beginPath();
-    uictx.arc(e.offsetX,e.offsetY,ctx.lineWidth/2,0,Math.PI*2);
-    
-    if (ctx.strokeStyle.toLowerCase() == "#ffffff"){
-        uictx.fillStyle = "#ffffff";
-        uictx.fill();
-        uictx.stroke();
-    } else {
-        uictx.fillStyle= ctx.strokeStyle;
-        uictx.fill();
+    let t = getTool();
+    if (t=="Text"){
+        uictx.fillStyle = ctx.strokeStyle;
+        let text = document.getElementById("textBox").value;
+        uictx.fillText(text,e.offsetX,e.offsetY);
     }
-    if(mdown){
-        /*
-        ctx.beginPath();
-        ctx.moveTo(e.offsetX,e.offsetY);
-        ctx.arc(e.offsetX,e.offsetY,10,0,Math.PI*2);
-        ctx.fill();
-        */
-        ctx.lineTo(e.offsetX,e.offsetY);
-        ctx.stroke();
-        
+    if (t== "Pen" ||  t == "Eraser") {
        
+        uictx.beginPath();
+        uictx.arc(e.offsetX,e.offsetY,ctx.lineWidth/2,0,Math.PI*2);
+        
+        if (ctx.strokeStyle.toLowerCase() == "#ffffff"){
+            uictx.fillStyle = "#ffffff";
+            uictx.fill();
+            uictx.stroke();
+        } else {
+            uictx.fillStyle= ctx.strokeStyle;
+            uictx.fill();
+        }
+        if(mdown){
+            /*
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX,e.offsetY);
+            ctx.arc(e.offsetX,e.offsetY,10,0,Math.PI*2);
+            ctx.fill();
+            */
+            ctx.lineTo(e.offsetX,e.offsetY);
+            ctx.stroke();
+            
+           
 
-        ctx.moveTo(e.offsetX,e.offsetY);
+            ctx.moveTo(e.offsetX,e.offsetY);
+        }
     }
 };
 uicv.onmouseout = uicv.onmouseup = e=>{
@@ -94,13 +123,9 @@ uicv.onmouseout = uicv.onmouseup = e=>{
         ctx.lineTo(e.offsetX,e.offsetY);
         ctx.stroke();
     }
+    uictx.clearRect(0,0,uicv.width,uicv.height);
 };
 
-onkeypress =  e=>{
-    if(e.key ==' ') clear();
-    if(e.key =='+') ctx.lineWidth+=1;
-    if(e.key =='-') ctx.lineWidth-=1;
-};
 function updateUI(){
     let lb = document.getElementById("penSize");
     lb.textContent = `Pen Size: ${ctx.lineWidth}`;
@@ -124,41 +149,30 @@ document.getElementById("keep").onclick = e=>{
     img.style.border= "black 1px solid";
     img.style.margin = 1;
     img.src =cv.toDataURL('png');
+    img.height=.5*cv.height;
+    img.width=.5*cv.width;
     document.body.appendChild(img);
 };
-document.getElementById("penType").onclick = e =>{
-    
-    if (ctx.strokeStyle.toLowerCase() == "#ffffff"){
-        document.getElementById("penType").textContent = "Eraser";
+
+
+document.getElementById("toolType").onchange = e=>{
+    let t= getTool();
+    let textBox = document.getElementById("textBox")
+    textBox.hidden = true;
+    if(t=="Pen"){
         ctx.strokeStyle = 'black';
-    } else {
-        document.getElementById("penType").textContent = "Pen";
+    }
+    if(t=="Eraser"){
         ctx.strokeStyle = 'white';
     }
-    //uictx.lineWidth-=1;
+    if(t=="Text"){
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle= "black";
+        textBox.hidden = false;
+    }
     updateUI();
 };
-    </script>
+
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
